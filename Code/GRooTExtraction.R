@@ -3,7 +3,13 @@
 
 # load data: GRooTFullVersion #
  
-GRooTFullVersion<- read.csv("C:/Users/GRooTFullVersion.csv", header=T, na.strings=c("", "NA")) ####Final
+
+if( !file.exists("DataFiles/GRooTFullVersion.csv") ){
+  unzip("DataFiles/GRooTFullVersion.zip", exdir = "DataFiles")
+}
+
+
+GRooTFullVersion<- read.csv("DataFiles/GRooTFullVersion.csv", header=T, na.strings=c("", "NA")) ####Final
 str(GRooTFullVersion)
 names(GRooTFullVersion)
 
@@ -74,7 +80,8 @@ speciesRisk<-rbind(speciesGRooTlog, speciesGRooTother)
 ### when all data entries have the same value for the species ###
 
 ### merge error risk with other information in the database ###
-speciesTotal<-merge(speciesGRooT, speciesRisk, by=c("GRooTID", "genusTNRS", "speciesTNRS", "traitName", "traitValue"))
+speciesTotal<-merge(speciesGRooT, speciesRisk, 
+                    by=c("GRooTID", "genusTNRS", "speciesTNRS", "traitName", "traitValue"))
 
 ### join the data at species and genus level ###
 GRooTFull<-rbind(speciesTotal, genusGRooT) 
@@ -90,8 +97,7 @@ GRooTFullVersion <- GRooTFull[, c(1, 6:17, 2:3, 18:71, 4:5, 72:73 )]
 names(GRooTFullVersion)
 
 
-setwd("C:/Users/kiran/Dropbox/sROOT_mine/sROOT_database/")
-write.csv(GRooTFullVersion, file = "GRooTFullVersionNew.csv",row.names=FALSE, na="")
+write.csv(GRooTFullVersion, file = "DataFiles/GRooTFullVersionNew.csv",row.names=FALSE, na="")
 
 
 
@@ -110,7 +116,8 @@ speciesGRooT<-dplyr::filter(GRooTFullVersion,!is.na(speciesTNRS))
 
 speciesGRooT$errorRisk<-as.numeric(speciesGRooT$errorRisk) 
 
-###For trait that are not normal distributed, mean values can be calculated by using log transform values and back transform or by using means in the original units###
+### For trait that are not normal distributed, mean values can be calculated 
+### by using log transform values and back transform or by using means in the original units
 
 GRooTAggregateSpeciesVersion<- speciesGRooT %>% 
   ##filter(belowgroundEntities == "FR") %>% #if you are interested only in particular entities (other option below)
