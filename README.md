@@ -1,3 +1,40 @@
+
+
+## This is a fork of the **Global Root Trait (GRooT) Database** 
+
+*last changed 01-02-2021*
+
+Changes are made to combine the GRooT trait data with plant species records 
+from the Seed Addition and Disturbance Experiment (SADE).
+The SADE experiment was installed in the framework 
+of the [Biodiversity Exploratories](https://www.biodiversity-exploratories.de/).
+
+For details on the SADE Experiment see e.g.:
+
+Freitag, M., Klaus, V. H., Bolliger, R., Hamer, U., Kleinebecker, T., Prati, D., Schäfer, D., & Hölzel, N. (in revision).
+Restoration of permanent grasslands by seeding: assessing the limiting factors along land-use gradients.
+
+Klaus, V. H., Schäfer, D., Kleinebecker, T., Fischer, M., Prati, D., & Hölzel, N. (2017). 
+Enriching plant diversity in grasslands by large-scale experimental sward disturbance 
+and seed addition along gradients of land-use intensity. 
+*Journal of Plant Ecology, 10*(4), 581–591. 
+doi: [10.1093/jpe/rtw062](https://doi.org/10.1093/jpe/rtw062)
+
+Schäfer, D., Klaus, V. H., Kleinebecker, T., Boeddinghaus, R. S., Hinderling, J., Kandeler, E., Marhan, S.,
+Nowak, S., Sonnemann, I., Wurst, S., Fischer, M., Hölzel, N., Hamer, U., & Prati, D. (2019). 
+Recovery of ecosystem functions after experimental disturbance in 73 grasslands 
+differing in land‐use intensity, plant species richness and community composition. 
+*Journal of Ecology, 107*(6), 2635–2649. 
+doi: [10.1111/1365-2745.13211](https://doi.org/10.1111/1365-2745.13211)
+
+
+
+--- 
+
+*Original README by GRooT below*
+
+---
+
 ## Global Root Trait (GRooT) Database
 
 Our principal objective with GRooT is to contribute towards the inclusion of root traits in large-scale comparative studies and global models by offering standardized and curated data of key root traits.
