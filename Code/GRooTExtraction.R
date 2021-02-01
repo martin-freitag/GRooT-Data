@@ -119,21 +119,23 @@ speciesGRooT$errorRisk<-as.numeric(speciesGRooT$errorRisk)
 ### For trait that are not normal distributed, mean values can be calculated 
 ### by using log transform values and back transform or by using means in the original units
 
+traits.lognormal <- c("Root_cortex_thickness", "Root_stele_diameter", "Root_stele_fraction", "Root_vessel_diameter",
+                       "Root_branching_density", "Root_branching_ratio", "Root_C_N_ratio",
+                       "Root_Ca_concentration", "Root_K_concentration", "Root_Mg_concentration",
+                       "Root_Mn_concentration", "Root_N_concentration", "Root_N_P_ratio", "Root_P_concentration",
+                       "Root_lifespan_mean", "Root_lifespan_median", "Root_litter_mass_loss_rate", "Root_production",
+                       "Root_turnover_rate", "Mean_Root_diameter", "Root_dry_matter_content", "Root_tissue_density",
+                       "Specific_root_area", "Specific_root_length", "Specific_root_respiration",
+                       "Coarse_root_fine_root_mass_ratio", "Fine_root_mass_leaf_mass_ratio", "Root_length_density_volume",
+                       "Root_mass_density", "Rooting_depth")
+
 GRooTAggregateSpeciesVersion<- speciesGRooT %>% 
   ##filter(belowgroundEntities == "FR") %>% #if you are interested only in particular entities (other option below)
   ##filter(between(errorRisk, -4, 4)) %>% #if you want to filter by error risk values
   mutate(studySite= paste(referencesAbbreviated, decimalLatitude, decimalLongitud, locationID, location)) %>%
   dplyr::select(studySite, genusTNRS, speciesTNRS, traitName, traitValue) %>% 
   group_by(studySite, genusTNRS, speciesTNRS, traitName) %>% 
-  filter(traitName %in% c("Root_cortex_thickness", "Root_stele_diameter", "Root_stele_fraction", "Root_vessel_diameter",
-                          "Root_branching_density", "Root_branching_ratio", "Root_C_N_ratio",
-                          "Root_Ca_concentration", "Root_K_concentration", "Root_Mg_concentration",
-                          "Root_Mn_concentration", "Root_N_concentration", "Root_N_P_ratio", "Root_P_concentration",
-                          "Root_lifespan_mean", "Root_lifespan_median", "Root_litter_mass_loss_rate", "Root_production",
-                          "Root_turnover_rate", "Mean_Root_diameter", "Root_dry_matter_content", "Root_tissue_density",
-                          "Specific_root_area", "Specific_root_length", "Specific_root_respiration",
-                          "Coarse_root_fine_root_mass_ratio", "Fine_root_mass_leaf_mass_ratio", "Root_length_density_volume",
-                          "Root_mass_density", "Rooting_depth")) %>%
+  filter(traitName %in% traits.log.normal) %>%
   mutate(valuesLog=log(traitValue+0.0001)) %>%
   summarise(meanStudySite = mean(traitValue), meanStudySiteLog = mean(valuesLog)) %>% 
   #summarise(meanStudySiteLog = mean(valuesLog)) %>%
@@ -144,15 +146,17 @@ GRooTAggregateSpeciesVersion<- speciesGRooT %>%
 
 ###For trait normal distributed###
 
+traits.normal <- c("Root_xylem_vessel_number", "Root_mass_fraction", "Root_C_concentration",
+                   "Root_lignin_concentration", "Root_total_structural_carbohydrate_concentration",
+                   "Lateral_spread", "Root_mycorrhizal colonization", "Net_nitrogen_uptake_rate")
+
 GRooTAggregateSpeciesVersion2<- speciesGRooT %>% 
   ##filter(belowgroundEntities == "FR") %>% #if you are interested only in particular entities (other option below)
   ##filter(between(errorRisk, -4, 4)) %>% #if you want to filter by error risk values
   mutate(studySite= paste(referencesAbbreviated, decimalLatitude, decimalLongitud, locationID, location)) %>%
   dplyr::select(studySite, genusTNRS, speciesTNRS, traitName, traitValue) %>% 
   group_by(studySite, genusTNRS, speciesTNRS, traitName) %>% 
-  filter(traitName %in% c("Root_xylem_vessel_number", "Root_mass_fraction", "Root_C_concentration",
-                          "Root_lignin_concentration", "Root_total_structural_carbohydrate_concentration",
-                          "Lateral_spread", "Root_mycorrhizal colonization", "Net_nitrogen_uptake_rate")) %>%
+  filter(traitName %in% traits.normal) %>%
   summarise(meanStudySite = mean(traitValue)) %>% 
   group_by(genusTNRS, speciesTNRS, traitName) %>% 
   summarise(entriesStudySite = n(), meanSpecies = mean(meanStudySite), 
@@ -179,5 +183,50 @@ GRooTAggregateSpeciesVersion1<- speciesGRooT %>%
 
 
 
+################################################################################
+### Alternative, non-tidyr way to calculate mean, median,                   #### 
+### first and third percentiles per species                                 ####
+################################################################################
 
+# add study site variable
+speciesGRooT$studySite <- with(speciesGRooT, 
+                               paste(referencesAbbreviated, 
+                                     decimalLatitude, 
+                                     decimalLongitud, 
+                                     locationID, 
+                                     location)
+                               )
+
+# start with lognormal distributed traits, subset and log-transform (+0.0001 for zero entries)
+speciesGRooT.lognormal <- speciesGRooT[ speciesGRooT$traitName %in% traits.lognormal , ]
+speciesGRooT.lognormal$valuesLog <- log(speciesGRooT.lognormal$traitValue+0.0001)
+
+# get means by study site
+speciesGRooT.lognormal <- aggregate(valuesLog ~ studySite + genusTNRS + speciesTNRS + traitName,
+                                    function(x) mean(x, na.rm = TRUE), 
+                                    data = speciesGRooT.lognormal)
+
+# get means by species
+speciesGRooT.lognormal <- aggregate(valuesLog ~ genusTNRS + speciesTNRS + traitName,
+                                    function(x) mean(x, na.rm = TRUE), 
+                                    data = speciesGRooT.lognormal)
+
+# transform to original scale
+speciesGRooT.lognormal$traitMean <- exp(speciesGRooT.lognormal$valuesLog) - 0.0001
+
+
+
+
+# now means for normal distributed traits
+speciesGRooT.normal <- speciesGRooT[ speciesGRooT$traitName %in% traits.normal , ]
+
+# get means by study site
+speciesGRooT.normal <- aggregate(traitValue ~ studySite + genusTNRS + speciesTNRS + traitName,
+                                    function(x) mean(x, na.rm = TRUE), 
+                                    data = speciesGRooT.normal)
+
+# get means by species
+speciesGRooT.normal <- aggregate(traitValue ~ genusTNRS + speciesTNRS + traitName,
+                                    function(x) mean(x, na.rm = TRUE), 
+                                    data = speciesGRooT.normal)
 
